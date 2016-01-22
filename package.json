@@ -1,0 +1,26 @@
+{
+  "name": "checkname",
+  "version": "1.0.0",
+  "description": "validates the file and folder names of a project",
+  "main": "mainfile.js",
+  "dependencies": {},
+  "devDependencies": {},
+  "scripts": {
+    "test": "filecheck"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DebjyotiPaul16/Chkfile.git"
+  },
+  "keywords": [
+    "filename",
+    "folders",
+    "validate"
+  ],
+  "author": "Debjyoti Paul",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/DebjyotiPaul16/Chkfile/issues"
+  },
+  "homepage": "https://github.com/DebjyotiPaul16/Chkfile#readme"
+}
