@@ -1,6 +1,4 @@
-#! /usr/bin/env node
-
-var finder = require('findit')('./');
+var finder = require('findit')(process.argv[2]);
 var path = require('path')
            , cmd = require('commander')
            , chalk = require('chalk');
@@ -68,6 +66,7 @@ endOfFile: finder.on('end',function (link,stat)
 
     
  displayResults: function () {
+                console.log(process.argv[2]);
                 console.log("====================================");
 				console.log(chalk.blue('Total Folders Scanned:'), chalk.white(validateFileNames.Folders.length));
 				console.log(chalk.blue('Total Files Scanned:'), chalk.white(validateFileNames.Files.length));
