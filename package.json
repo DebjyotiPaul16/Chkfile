@@ -3,7 +3,11 @@
   "version": "1.0.0",
   "description": "validates the file and folder names of a project",
   "main": "mainfile.js",
-  "dependencies": {},
+  "dependencies": {
+    "chalk": "^1.1.1",
+    "commander": "^2.9.0",
+    "findit":"^2.0.0"
+  },
   "devDependencies": {},
   "scripts": {
     "test": "filecheck"
