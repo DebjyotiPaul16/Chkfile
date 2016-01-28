@@ -1,10 +1,10 @@
-var finder = require('findit')(process.argv[2]);
+var finder = require('findit')(process.argv[2] || '\.'); //required to get the base dir path from command line
 var path = require('path')
            , cmd = require('commander')
            , chalk = require('chalk');
 
 
-var lower_case = /^([a-z]+|[^a-z0-9][a-z]+)$/
+var lower_case = /^([a-z]+|[^a-z0-9][a-z]+)$/             //regex for filename validation
 	, lower_case_with_hyphen = ''
 	, lower_case_with_underscore = ''
 	, camel_case = ''
@@ -32,17 +32,19 @@ var validateFileNames = {
  readAllDirs: finder.on('directory', function (dir, stat, stop) {
      
     var base = path.basename(dir);
-     
-   // if (base === '.git' || base === 'node_modules') stop()
-   // else
+   
+   // if (base === '.git' || base === 'node_modules') stop()  //** Manually filter the dirs **//
+   
      
      if(!validateFileNames.isLowerCase(base))
            validateFileNames.folders_with_error.push(base);
      
          validateFileNames.Folders.push(base);
-      //  console.log(base);
+         
 }),
 
+//** read the files name for validation **//
+ 
 readAllFiles: finder.on('file', function (file, stat) {
    var basefile = path.basename(file);
    if(!validateFileNames.isLowerCase(basefile))
@@ -57,7 +59,7 @@ statLink: finder.on('link', function (link, stat) {
    // console.log(link);
 }),
   
-    
+//** logging at the end of traversal **//
 endOfFile: finder.on('end',function (link,stat)
           {
    validateFileNames.displayResults();
@@ -75,7 +77,8 @@ endOfFile: finder.on('end',function (link,stat)
 				console.log(chalk.red('Files (lower case violation):'), chalk.red(validateFileNames.files_with_error.length));
 				console.log("====================================");
 	},
-    
+	
+    //** checking **//
     isLowerCase: function (stringToCheck) {
 		return lower_case.test(stringToCheck);
 	}
@@ -83,8 +86,8 @@ endOfFile: finder.on('end',function (link,stat)
 };
 
 
-if (cmd.path) {
-	// console.log("Path: " + cmd.path);
-//	validateFileNames.readAllFiles(cmd.path);
-}
+// if (cmd.path) {
+// 	// console.log("Path: " + cmd.path);
+// //	validateFileNames.readAllFiles(cmd.path);
+// }
 
