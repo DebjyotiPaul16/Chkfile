@@ -4,7 +4,7 @@
   "description": "validates the file and folder names of a project",
   "preferGlobal": true,
   "bin": {
-    "filecheck": "bin/findit.js"
+    "filecheck": "findit.js"
   },
   "dependencies": {
     "async": "^1.5.2",
