@@ -1,9 +1,5 @@
 #! /usr/bin/env node
 
-var userArgs = process.argv.slice(2);
-var searchPattern = userArgs[0];
-
-var finder = require('findit')(searchPattern);
 
 var path = require('path')
            ,byline = require('byline')
@@ -20,50 +16,55 @@ var lower_case = /^([a-z]+|[^a-z0-9][a-z]+)$/
 	, camel_case = ''
         ,linedata=''
 	, upper_case = '/[A-Z]/'
-        ,file = fs.createWriteStream('array.txt')
-        stream = fs.createReadStream('filename.txt');
-	excludeArr =['node_modules', 'bower_component', '.git', '.svn', '.hg'];
+    ,fileLog = fs.createWriteStream('errorLogFile.txt')
+    ,dirLog  = fs.createWriteStream('array.txt')
+    stream = fs.createReadStream('filename.txt');
+    excludeArr = ['node_modules', 'bower_component', '.git', '.svn', '.hg'];
     
-   stream = byline.createStream(stream);
+     stream = byline.createStream(stream);
 
 cmd
 	.version(pkg.version)
 	.description(pkg.description)
 	.usage('[--path][--custom-regex][--exclude][--use-gitignore]')
 	.option('-c, --custom-regex', 'format type to check.', upper_case)
+        .option('-l, --uppercase','uppercase checking', lower_case)
 	.option('-i, --use-gitignore', 'don\'t use ".gitignore"', true)//
-	.option('-x, --exclude [names]', 'files or Folder to exclude. ')
+	.option('-x, --exclude [names]', 'files or Folder to exclude.')
 	.option('-p, --path <folder path>', 'folder path to run a filename check',process.cwd())
+  
 
-	cmd.parse(process.argv);
-
-
+cmd.parse(process.argv);
+var finder = require('findit')(cmd.path);
 var validateFileNames = {
     
-    Folders: [],
+        Folders: [],
 	Files: [],
 	files_with_error: [],
 	folders_with_error: [], 
     
     
-//readAllFiles: function (srcPath,excludeArr) {
+readAllFiles: function (srcPath,excludeArr) {
      
     
-excludeArr: stream.on('data', function(line) {
+//excludeArr: 
+    stream.on('data', function(line) {
    
     lineData=line.toString();
     excludeArr.push(lineData);
-}),
+});
     
-fileReadError:stream.on('end',function(){
-//console.log("END");
-}),
+//fileReadError:
+    stream.on('end',function(){
+   // console.log(excludeArr);
+});
 
 
-readAllDirs: finder.on('directory', function (dir, stat, stop) {
+//readAllDirs: 
+    finder.on('directory', function (dir, stat, stop) {
      
     var base = path.basename(dir);
-    // console.log(base);
+  
     if (excludeArr.indexOf(base)>-1) 
     {
         stop()
@@ -74,41 +75,49 @@ readAllDirs: finder.on('directory', function (dir, stat, stop) {
            validateFileNames.folders_with_error.push(base);
             
            validateFileNames.Folders.push(base);
-      //  console.log(base);
+ 
  }
-}),
+});
 
-readAllFiles:finder.on('file', function (file, stat) {
+//readAllFiles:
+    finder.on('file', function (file, stat) {
    var basefile = path.basename(file);
-   if(!validateFileNames.isLowerCase(basefile))
+   if(!validateFileNames.isLowerCase(basefile)){
          validateFileNames.files_with_error.push(basefile);
+   }
     
      validateFileNames.Files.push(file);
        
-}),
+});
 
     
-// statLink:finder.on('link', function (link, stat) {
-//    // console.log(link);
-// }),
+//statLink:
+    finder.on('link', function (link, stat) {
   
-//**** Display log at the end of traversing ****//
+});
   
-endOfFile:finder.on('end',function (link,stat)
+    
+//endOfFile:
+     finder.on('end',function (link,stat)
           {
-               validateFileNames.displayResults();
-               //**** Writing in text file ****//    
-              async.eachSeries(validateFileNames.files_with_error, function (prime, callback) {
-                   file.write(prime+'\n');
-                   callback(); // Alternatively: callback(new Error());
-           }, function (err) {
-                              if (err) { throw err; }
-                             });
-}), 
+   validateFileNames.displayResults();
+         
+         validateFileNames.writeToFile(fileLog,validateFileNames.files_with_error);
+         validateFileNames.writeToFile(dirLog,validateFileNames.folders_with_error);
+         
+        
+    
 
-  //**** Displaying the results ****//  
+});
+    
+},
+    
  displayResults: function () {
-            
+              //  console.log(process.argv[2]);
+                console.log("Working Parameters");
+                console.log(" **===========**");
+                console.log(chalk.white.bgRed.bold('Working path :'),chalk.white(cmd.path))
+                console.log(chalk.white.bgRed.bold('Exclusions :'),chalk.white(excludeArr))
                 console.log("====================================");
 				console.log(chalk.blue('Total Folders Scanned:'), chalk.white(validateFileNames.Folders.length));
 				console.log(chalk.blue('Total Files Scanned:'), chalk.white(validateFileNames.Files.length));
@@ -118,19 +127,39 @@ endOfFile:finder.on('end',function (link,stat)
 				console.log("====================================");
 	},
     
-    isLowerCase: function (stringToCheck) {
+   
+    
+writeToFile : function(filename,arrLog){
+    
+    async.eachSeries(arrLog, function (prime, callback) {
+    // console.log(prime);
+        
+     filename.write(prime+'\n');
+     callback();
+  }, function (err) {
+  	
+   if (err) { throw err; }
+   
+   });
+    
+    
+},
+     isLowerCase: function (stringToCheck) {
 		return lower_case.test(stringToCheck);
 	}
     
 };
 
 
-
 if (cmd.path) {
 	// console.log("Path: "+cmd.path);
-}
-if (cmd.exclude) {
-	// console.log('Exclude:',cmd.exclude.split(','));
    
+    if(cmd.exclude)
+        {
+        excludeArr = (cmd.exclude.split(',')).slice();
+        }
+
+    validateFileNames.readAllFiles(cmd.path,excludeArr);
 }
+
 
